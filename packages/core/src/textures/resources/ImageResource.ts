@@ -31,6 +31,7 @@ export class ImageResource extends BaseImageResource
     bitmap: ImageBitmap;
     /**
      * @param {HTMLImageElement|string} source - image source or URL
+     * @param {object} [options]
      * @param {boolean} [options.autoLoad=true] - start loading process
      * @param {boolean} [options.createBitmap=PIXI.settings.CREATE_IMAGE_BITMAP] - whether its required to create
      *        a bitmap before upload
@@ -317,5 +318,17 @@ export class ImageResource extends BaseImageResource
         }
         this._process = null;
         this._load = null;
+    }
+
+    /**
+     * Used to auto-detect the type of resource.
+     *
+     * @static
+     * @param {string|HTMLImageElement} source - The source object
+     * @return {boolean} `true` if source is string or HTMLImageElement
+     */
+    static test(source: unknown): source is string|HTMLImageElement
+    {
+        return typeof source === 'string' || source instanceof HTMLImageElement;
     }
 }

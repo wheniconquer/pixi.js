@@ -27,7 +27,7 @@ import type { IRenderingContext } from './IRenderingContext';
 import type { Extract } from '@pixi/extract';
 
 export interface IRendererPluginConstructor {
-    new (renderer: Renderer): IRendererPlugin;
+    new (renderer: Renderer, options?: any): IRendererPlugin;
 }
 
 export interface IRendererPlugin {
@@ -386,11 +386,10 @@ export class Renderer extends AbstractRenderer
         if (!skipUpdateTransform)
         {
             // update the scene graph
-            const cacheParent = displayObject.parent;
+            const cacheParent = displayObject.enableTempParent();
 
-            displayObject.parent = this._tempDisplayObjectParent;
             displayObject.updateTransform();
-            displayObject.parent = cacheParent;
+            displayObject.disableTempParent(cacheParent);
             // displayObject.hitArea = //TODO add a temp hit area
         }
 
@@ -483,9 +482,9 @@ export class Renderer extends AbstractRenderer
      * @name PIXI.Renderer#plugins
      * @type {object}
      * @readonly
-     * @property {PIXI.accessibility.AccessibilityManager} accessibility Support tabbing interactive elements.
-     * @property {PIXI.extract.Extract} extract Extract image data from renderer.
-     * @property {PIXI.interaction.InteractionManager} interaction Handles mouse, touch and pointer events.
+     * @property {PIXI.AccessibilityManager} accessibility Support tabbing interactive elements.
+     * @property {PIXI.Extract} extract Extract image data from renderer.
+     * @property {PIXI.InteractionManager} interaction Handles mouse, touch and pointer events.
      * @property {PIXI.Prepare} prepare Pre-render display objects.
      */
 

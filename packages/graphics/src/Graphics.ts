@@ -20,7 +20,7 @@ import { BLEND_MODES } from '@pixi/constants';
 import { Container } from '@pixi/display';
 import { Shader } from '@pixi/core';
 
-import type { IShape } from '@pixi/math';
+import type { IShape, IPointData } from '@pixi/math';
 import type { IDestroyOptions } from '@pixi/display';
 import { LINE_JOIN, LINE_CAP } from './const';
 
@@ -292,7 +292,7 @@ export class Graphics extends Container
         return this._tint;
     }
 
-    public set tint(value)
+    public set tint(value: number)
     {
         this._tint = value;
     }
@@ -343,7 +343,7 @@ export class Graphics extends Container
      * @param {boolean} [options.native=false] - If true the lines will be draw using LINES instead of TRIANGLE_STRIP
      * @param {PIXI.LINE_CAP}[options.cap=PIXI.LINE_CAP.BUTT] - line cap style
      * @param {PIXI.LINE_JOIN}[options.join=PIXI.LINE_JOIN.MITER] - line join style
-     * @param {number}[miterLimit=10] - miter limit ratio
+     * @param {number}[options.miterLimit=10] - miter limit ratio
      * @return {PIXI.Graphics} This Graphics object. Good for chaining method calls
      */
     public lineStyle(options: ILineStyleOptions = null): this
@@ -380,7 +380,7 @@ export class Graphics extends Container
      * @param {boolean} [options.native=false] - If true the lines will be draw using LINES instead of TRIANGLE_STRIP
      * @param {PIXI.LINE_CAP}[options.cap=PIXI.LINE_CAP.BUTT] - line cap style
      * @param {PIXI.LINE_JOIN}[options.join=PIXI.LINE_JOIN.MITER] - line join style
-     * @param {number}[miterLimit=10] - miter limit ratio
+     * @param {number}[options.miterLimit=10] - miter limit ratio
      * @return {PIXI.Graphics} This Graphics object. Good for chaining method calls
      */
     public lineTextureStyle(options: ILineStyleOptions): this
@@ -1200,10 +1200,10 @@ export class Graphics extends Container
     /**
      * Tests if a point is inside this graphics object
      *
-     * @param {PIXI.Point} point - the point to test
+     * @param {PIXI.IPointData} point - the point to test
      * @return {boolean} the result of the test
      */
-    public containsPoint(point: Point): boolean
+    public containsPoint(point: IPointData): boolean
     {
         this.worldTransform.applyInverse(point, Graphics._TEMP_POINT);
 
