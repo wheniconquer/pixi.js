@@ -5,7 +5,6 @@ import { QuadUv } from '../utils/QuadUv';
 import { Rectangle, Matrix } from '@pixi/math';
 import { UniformGroup } from '../shader/UniformGroup';
 import { DRAW_MODES, CLEAR_MODES } from '@pixi/constants';
-import { deprecation } from '@pixi/utils';
 import { FilterState } from './FilterState';
 
 import type { Filter } from './Filter';
@@ -13,11 +12,33 @@ import type { IFilterTarget } from './IFilterTarget';
 import type { ISpriteMaskTarget } from './spriteMask/SpriteMaskFilter';
 import type { RenderTexture } from '../renderTexture/RenderTexture';
 import type { Renderer } from '../Renderer';
+
 /**
- * System plugin to the renderer to manage the filters.
+ * System plugin to the renderer to manage filters.
+ *
+ * ## Pipeline
+ *
+ * The FilterSystem executes the filtering pipeline by rendering the display-object into a texture, applying its
+ * [filters]{@link PIXI.Filter} in series, and the last filter outputs into the final render-target.
+ *
+ * The filter-frame is the rectangle in world space being filtered, and those contents are mapped into
+ * `(0, 0, filterFrame.width, filterFrame.height)` into the filter render-texture. The filter-frame is also called
+ * the source-frame, as it is used to bind the filter render-textures. The last filter outputs to the `filterFrame`
+ * in the final render-target.
+ *
+ * ## Usage
+ *
+ * {@link PIXI.Container#renderAdvanced} is an example of how to use the filter system. It is a 3 step process:
+ *
+ * * **push**: Use {@link PIXI.FilterSystem#push} to push the set of filters to be applied on a filter-target.
+ * * **render**: Render the contents to be filtered using the renderer. The filter-system will only capture the contents
+ *      inside the bounds of the filter-target. NOTE: Using {@link PIXI.Renderer#render} is
+ *      illegal during an existing render cycle, and it may reset the filter system.
+ * * **pop**: Use {@link PIXI.FilterSystem#pop} to pop & execute the filters you initially pushed. It will apply them
+ *      serially and output to the bounds of the filter-target.
  *
  * @class
- * @memberof PIXI.systems
+ * @memberof PIXI
  * @extends PIXI.System
  */
 export class FilterSystem extends System
@@ -94,7 +115,7 @@ export class FilterSystem extends System
          * @property {Float32Array} inputClamp
          * @property {Number} resolution
          * @property {Float32Array} filterArea
-         * @property {Fload32Array} filterClamp
+         * @property {Float32Array} filterClamp
          */
         this.globalUniforms = new UniformGroup({
             outputFrame: this.tempRect,
@@ -124,7 +145,8 @@ export class FilterSystem extends System
     }
 
     /**
-     * Adds a new filter to the System.
+     * Pushes a set of filters to be applied later to the system. This will redirect further rendering into an
+     * input render-texture for the rest of the filtering pipeline.
      *
      * @param {PIXI.DisplayObject} target - The target of the filter to render.
      * @param {PIXI.Filter[]} filters - The filters to apply.
@@ -153,7 +175,7 @@ export class FilterSystem extends System
                 // new behavior: sum the padding
                 : padding + filter.padding;
             // only auto fit if all filters are autofit
-            autoFit = autoFit || filter.autoFit;
+            autoFit = autoFit && filter.autoFit;
 
             legacy = legacy || filter.legacy;
         }
@@ -196,12 +218,11 @@ export class FilterSystem extends System
         state.renderTexture.filterFrame = state.sourceFrame;
 
         renderer.renderTexture.bind(state.renderTexture, state.sourceFrame, destinationFrame);
-        renderer.renderTexture.clear();
+        renderer.framebuffer.clear(0, 0, 0, 0);
     }
 
     /**
-     * Pops off the filter and applies it.
-     *
+     * Pops off a set of the filters and applies them. This should be called once you've rendered everything to be filtered.
      */
     pop(): void
     {
@@ -317,17 +338,10 @@ export class FilterSystem extends System
             this.renderer.renderTexture.bind(filterTexture);
         }
 
-        // TODO: remove in next major version
-        if (typeof clearMode === 'boolean')
-        {
-            clearMode = clearMode ? CLEAR_MODES.CLEAR : CLEAR_MODES.BLEND;
-            // get deprecation function from utils
-            deprecation('5.2.1', 'Use CLEAR_MODES when using clear applyFilter option');
-        }
         if (clearMode === CLEAR_MODES.CLEAR
             || (clearMode === CLEAR_MODES.BLIT && this.forceClear))
         {
-            this.renderer.renderTexture.clear();
+            this.renderer.framebuffer.clear(0, 0, 0, 0);
         }
     }
 
@@ -339,7 +353,7 @@ export class FilterSystem extends System
      * @param {PIXI.RenderTexture} output - The target to output to.
      * @param {PIXI.CLEAR_MODES} [clearMode] - Should the output be cleared before rendering to it
      */
-    applyFilter(filter: Filter, input: RenderTexture, output: RenderTexture, clearMode: CLEAR_MODES): void
+    applyFilter(filter: Filter, input: RenderTexture, output: RenderTexture, clearMode?: CLEAR_MODES): void
     {
         const renderer = this.renderer;
 

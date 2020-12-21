@@ -6,6 +6,30 @@ import type { CanvasRenderer } from '@pixi/canvas-renderer';
 let warned = false;
 
 /**
+ * Cached tint value so we can tell when the tint is changed.
+ * @memberof PIXI.Mesh#
+ * @member {number} _cachedTint
+ * @protected
+ */
+Mesh.prototype._cachedTint = 0xFFFFFF;
+
+/**
+ * Cached tinted texture.
+ * @memberof PIXI.Mesh#
+ * @member {HTMLCanvasElement} _tintedCanvas
+ * @protected
+ */
+Mesh.prototype._tintedCanvas = null;
+
+/**
+ * The cache texture is used to generate `_tintedCanvas`.
+ * @memberof PIXI.Mesh#
+ * @member {PIXI.Texture} _cachedTexture
+ * @protected
+ */
+Mesh.prototype._cachedTexture = null;
+
+/**
  * Renders the object using the Canvas renderer
  *
  * @private
@@ -28,7 +52,7 @@ Mesh.prototype._renderCanvas = function _renderCanvas(renderer: CanvasRenderer):
     else if (!warned)
     {
         warned = true;
-        if (window.console)
+        if (self.console)
         {
             console.warn('Mesh with custom shaders are not supported in CanvasRenderer.');
         }

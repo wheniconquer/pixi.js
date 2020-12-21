@@ -1,3 +1,4 @@
+import { Texture } from '@pixi/core';
 import { SHAPES, Matrix } from '@pixi/math';
 import { canvasUtils } from '@pixi/canvas-renderer';
 
@@ -5,7 +6,7 @@ import type { CanvasRenderer } from '@pixi/canvas-renderer';
 import type { FillStyle, Graphics } from '@pixi/graphics';
 import type { Polygon, Rectangle, Circle, Ellipse, RoundedRectangle } from '@pixi/math';
 
-/**
+/*
  * @author Mat Groves
  *
  * Big thanks to the very clever Matt DesLauriers <mattdesl> https://github.com/mattdesl/
@@ -52,7 +53,7 @@ export class CanvasGraphicsRenderer
     {
         let res;
 
-        if (style.texture)
+        if (style.texture && style.texture.baseTexture !== Texture.WHITE.baseTexture)
         {
             if (style.texture.valid)
             {

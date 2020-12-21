@@ -19,7 +19,7 @@ const byteSizeMap: {[key: number]: number} = { 5126: 4, 5123: 2, 5121: 1 };
  *
  * @class
  * @extends PIXI.System
- * @memberof PIXI.systems
+ * @memberof PIXI
  */
 export class GeometrySystem extends System
 {
@@ -93,7 +93,7 @@ export class GeometrySystem extends System
         this.CONTEXT_UID = this.renderer.CONTEXT_UID;
 
         // webgl2
-        if (!gl.createVertexArray)
+        if (context.webGLVersion !== 2)
         {
             // webgl 1!
             let nativeVaoExtension = this.renderer.context.extensions.vertexArrayObject;
@@ -128,7 +128,7 @@ export class GeometrySystem extends System
             }
         }
 
-        if (!gl.vertexAttribDivisor)
+        if (context.webGLVersion !== 2)
         {
             const instanceExt = gl.getExtension('ANGLE_instanced_arrays');
 
@@ -258,7 +258,7 @@ export class GeometrySystem extends System
     }
 
     /**
-     * Check compability between a geometry and a program
+     * Check compatibility between a geometry and a program
      * @protected
      * @param {PIXI.Geometry} geometry - Geometry instance
      * @param {PIXI.Program} program - Program instance

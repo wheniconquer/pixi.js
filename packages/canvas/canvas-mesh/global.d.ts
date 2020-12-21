@@ -3,6 +3,9 @@ declare namespace GlobalMixins {
         _renderCanvas?: (renderer: import('@pixi/canvas-renderer').CanvasRenderer) => void;
         _canvasPadding: number;
         canvasPadding: number;
+        _cachedTint: number;
+        _tintedCanvas: HTMLCanvasElement;
+        _cachedTexture: import('@pixi/core').Texture;
     }
 
     interface MeshMaterial {
